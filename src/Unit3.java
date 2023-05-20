@@ -27,7 +27,8 @@ public class Unit3 extends JFrame {
                     Unit3 frame = new Unit3();
                     frame.setVisible(true);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                	System.err.println("An error occurred: " + e.getMessage());
+
                 }
             }
         });
@@ -49,7 +50,7 @@ public class Unit3 extends JFrame {
                 tableModel.addRow(row);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+        	System.err.println("An error occurred: " + e.getMessage());
         }
         table.setModel(tableModel);
 
@@ -91,7 +92,7 @@ public class Unit3 extends JFrame {
 
         // create the password label and text field
         JLabel passwordLabel = new JLabel("Password:");
-        JTextField passwordField = new JPasswordField(20);
+        JPasswordField passwordField = new JPasswordField(20);
 
         // create the login button
         JButton loginButton = new JButton("Login");
@@ -134,13 +135,31 @@ public class Unit3 extends JFrame {
             try {
                 String dbURL = "jdbc:sqlserver://LAPTOP-SFGHK0FI\\SQLEXPRESS;"
                         + "database=Northwind;"
-                        + "encrypt=false;"
+                        + "encrypt=true;"
                         + "trustServerCertificate=false;"
                         + "loginTimeout=30;";
                 conn = DriverManager.getConnection(dbURL, username, password);
                 if (conn != null) {
-                    PreparedStatement stmt = conn.prepareStatement("SELECT IS_MEMBER('SalesRole'), IS_MEMBER('HRRole'), IS_MEMBER('CEORole')");
-                    ResultSet rs = stmt.executeQuery();
+                	PreparedStatement stmt = null;
+                	ResultSet rs = null;
+                	try {
+                	    stmt = conn.prepareStatement("SELECT IS_MEMBER('SalesRole'), IS_MEMBER('HRRole'), IS_MEMBER('CEORole')");
+                	    rs = stmt.executeQuery();
+                	    // Rest of the code...
+                	} catch (SQLException ex) {
+                	    // Handle the exception...
+                	} finally {
+                	    if (rs != null) {
+                	        try {
+                	            rs.close();
+                	        } catch (SQLException e) { /* ignored */}
+                	    }
+                	    if (stmt != null) {
+                	        try {
+                	            stmt.close();
+                	        } catch (SQLException e) { /* ignored */}
+                	    }
+                	}
                     boolean isSales = false, isHR = false, isCEO = false;
                     while (rs.next()) {
                         isSales = rs.getBoolean(1);
@@ -148,7 +167,7 @@ public class Unit3 extends JFrame {
                         isCEO = rs.getBoolean(3);
                     }
 					
-					
+
 					if (isSales) {
 					    JPanel salesPanel = new JPanel(new GridBagLayout());
 					    JButton ordersButton = createButtonWithAction("Orders", "SELECT * FROM Orders", new String[] {"OrderID", "CustomerID", "OrderDate", "RequiredDate"}, salesPanel);
